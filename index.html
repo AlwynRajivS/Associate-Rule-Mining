@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -475,6 +475,19 @@ body{
       <div class="usub">.xlsx · .xls · .csv · Auto-detects numeric vs categorical · All columns analyzed</div>
       <div class="uinfo" id="uploadInfo"></div>
     </div>
+    <div style="margin-top:15px;">
+    <!-- Download -->
+
+    <div style="text-align:center; margin-top:10px;">
+  <span style="color:var(--text3); font-size:12px;">Download Sample Files:</span><br>
+  <div style="text-align:center; margin-top:10px;margin-bottom:30px;">
+  <a href="amazon_sales_10000.xlsx" download class="btn-sm">Amazon</a>
+  <a href="hospital_1000_records.xlsx" download class="btn-sm">Hospital</a>
+  <a href="supermarket_1000_records.xlsx" download class="btn-sm">Supermarket</a>
+  <a href="100_students_dataset.xlsx" download class="btn-sm">Student</a>
+</div>
+  
+</div>
 
     <!-- API KEY -->
     <div class="key-card">
@@ -1668,6 +1681,15 @@ window.onload = function(){
     document.body.classList.add("light");
     document.getElementById("themeBtn").innerHTML = "☀️ Light";
   }
+}
+
+function downloadFile(filename){
+  const link = document.createElement('a');
+  link.href = filename;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 </script>
 </body>
