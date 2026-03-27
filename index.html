@@ -1,0 +1,1674 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Associate Rule Mining — Advanced Data Mining Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0f0c1a;--bg2:#16122a;--surface:#1e1830;--surface2:#251e3a;
+  --border:#2d2550;--border2:#3d3368;
+  --pink:#f472b6;--pink2:#ec4899;--pink3:rgba(244,114,182,.12);
+  --purple:#a78bfa;--purple2:#8b5cf6;--purple3:#7c3aed;--purple4:rgba(167,139,250,.12);
+  --cyan:#22d3ee;--cyan2:rgba(34,211,238,.1);
+  --gold:#fbbf24;--gold2:rgba(251,191,36,.1);
+  --green:#34d399;--green2:rgba(52,211,153,.1);
+  --text:#f1eeff;--text2:#c4b5fd;--text3:#7c6fa0;
+  --shadow:0 4px 30px rgba(0,0,0,.4);
+  --shadow2:0 8px 50px rgba(167,139,250,.15);
+  --glow:0 0 30px rgba(167,139,250,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* Animated background */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 20% 10%,rgba(124,58,237,.08) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 50% at 80% 80%,rgba(244,114,182,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 40% at 50% 50%,rgba(34,211,238,.04) 0%,transparent 60%);
+pointer-events:none;z-index:0;}
+
+/* ── LOGIN ── */
+#loginPage{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 100% 100% at 50% 0%,rgba(124,58,237,.2) 0%,var(--bg) 70%);padding:20px;}
+.lbox{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:24px;padding:50px 40px;box-shadow:var(--shadow2);animation:fadeUp .7s ease both;position:relative;overflow:hidden;}
+.lbox::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink));}
+.lbox::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(167,139,250,.06) 0%,transparent 70%);
+  bottom:-100px;right:-100px;pointer-events:none;}
+.llogo{font-family:'DM Serif Display',serif;font-size:34px;font-weight:400;
+  background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.lsub{color:var(--text3);font-size:13px;margin-bottom:36px;font-weight:500;letter-spacing:.02em;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--purple);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:9px;}
+.field input{width:100%;padding:13px 18px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-family:'Sora',sans-serif;font-size:14px;
+  font-weight:500;outline:none;transition:border-color .2s,box-shadow .2s;}
+.field input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.15);}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple3),var(--pink2));
+  border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;
+  font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;
+  box-shadow:0 4px 24px rgba(124,58,237,.4);}
+.btn-login:hover{opacity:.9;transform:translateY(-2px);box-shadow:0 8px 36px rgba(124,58,237,.5);}
+.lhint{color:var(--text3);font-size:12px;text-align:center;margin-top:16px;font-weight:500;}
+
+/* ── TOPBAR ── */
+#dashboard{display:none;position:relative;z-index:1;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 30px;
+  background:rgba(15,12,26,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 30px rgba(0,0,0,.4);}
+.tlogo{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tright{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.badge{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;
+  letter-spacing:.08em;background:var(--purple4);color:var(--purple);
+  border:1px solid var(--border2);text-transform:uppercase;}
+.badge-cyan{background:var(--cyan2);color:var(--cyan);border-color:rgba(34,211,238,.25);}
+.badge-pink{background:var(--pink3);color:var(--pink);border-color:rgba(244,114,182,.25);}
+.main-wrap{padding:26px;max-width:1500px;margin:0 auto;}
+
+/* ── UPLOAD ── */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:20px;padding:48px;
+  text-align:center;cursor:pointer;transition:all .3s;margin-bottom:20px;
+  background:linear-gradient(135deg,rgba(30,24,48,.8),rgba(37,30,58,.8));
+  position:relative;overflow:hidden;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--purple);
+  background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(244,114,182,.06));
+  box-shadow:var(--glow);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;}
+.uicon{font-size:52px;margin-bottom:14px;filter:drop-shadow(0 0 12px rgba(167,139,250,.4));}
+.utitle{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.usub{color:var(--text3);font-size:13px;font-weight:500;}
+.uinfo{margin-top:14px;font-size:12px;font-family:'JetBrains Mono',monospace;
+  color:var(--cyan);background:var(--cyan2);display:none;padding:7px 16px;
+  border-radius:8px;font-weight:600;border:1px solid rgba(34,211,238,.2);}
+
+/* ── KEY CARD ── */
+.key-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px 24px;margin-bottom:20px;box-shadow:var(--shadow);}
+.key-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.key-input{flex:1;min-width:200px;padding:11px 16px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
+.key-input:focus{border-color:var(--purple);}
+.btn-sm{padding:11px 22px;border-radius:10px;cursor:pointer;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--purple2),var(--pink2));
+  color:#fff;border:none;box-shadow:0 3px 14px rgba(124,58,237,.35);transition:all .2s;}
+.btn-sm:hover{opacity:.9;transform:translateY(-1px);}
+.key-note{font-size:11px;color:var(--text3);margin-top:10px;font-weight:500;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:22px 20px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;
+  box-shadow:var(--shadow);}
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow2);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gc,linear-gradient(90deg,var(--purple),var(--pink)));}
+.stat-card::after{content:'';position:absolute;bottom:-30px;right:-20px;width:100px;height:100px;
+  border-radius:50%;background:var(--blob,rgba(167,139,250,.05));}
+.sicon{font-size:24px;margin-bottom:12px;position:relative;z-index:1;}
+.sval{font-family:'DM Serif Display',serif;font-size:36px;font-weight:400;
+  background:var(--gc,linear-gradient(135deg,var(--purple),var(--pink)));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;position:relative;z-index:1;}
+.slbl{color:var(--text3);font-size:11px;font-weight:600;margin-top:8px;
+  letter-spacing:.05em;position:relative;z-index:1;text-transform:uppercase;}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:26px;margin-bottom:20px;box-shadow:var(--shadow);}
+.card-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;
+  display:flex;align-items:center;gap:10px;color:var(--text);}
+.pill{padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;
+  background:var(--purple4);color:var(--purple);border:1px solid var(--border2);
+  letter-spacing:.06em;text-transform:uppercase;}
+.pill-cyan{background:var(--cyan2);color:var(--cyan);border-color:rgba(34,211,238,.2);}
+.pill-pink{background:var(--pink3);color:var(--pink);border-color:rgba(244,114,182,.2);}
+.pill-gold{background:var(--gold2);color:var(--gold);border-color:rgba(251,191,36,.2);}
+
+/* ── CHARTS ── */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-bottom:20px;}
+.chart-wrap canvas{max-height:260px;}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:5px;margin-bottom:22px;flex-wrap:wrap;
+  background:var(--bg2);padding:6px;border-radius:14px;border:1px solid var(--border);}
+.tab{padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;
+  color:var(--text3);transition:all .2s;letter-spacing:.02em;border:none;background:none;white-space:nowrap;}
+.tab:hover{color:var(--purple);background:var(--purple4);}
+.tab.active{background:linear-gradient(135deg,var(--purple3),var(--pink2));
+  color:#fff;box-shadow:0 4px 18px rgba(124,58,237,.4);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .3s ease both;}
+
+/* ── TABLE ── */
+.table-scroll{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.data-table th{background:var(--surface2);color:var(--purple);padding:12px 16px;
+  text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;}
+.data-table td{padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text2);font-weight:500;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--surface2);}
+.search-inp{flex:1;min-width:180px;padding:10px 16px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-family:'Sora',sans-serif;font-size:13px;font-weight:500;outline:none;transition:border-color .2s;}
+.search-inp:focus{border-color:var(--purple);}
+
+/* ── TREE ── */
+.tree-root{list-style:none;}
+.tree-root li{margin:4px 0;}
+.tree-node{display:flex;align-items:center;gap:10px;padding:10px 16px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  cursor:pointer;user-select:none;transition:all .15s;font-size:13px;font-weight:600;}
+.tree-node:hover{border-color:var(--purple);background:var(--purple4);}
+.tree-toggle{font-size:9px;color:var(--purple);width:14px;flex-shrink:0;}
+.tree-children{display:none;margin-left:28px;margin-top:4px;list-style:none;}
+.tree-children.open{display:block;}
+.tree-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:2px 9px;background:var(--purple4);color:var(--purple);border-radius:5px;font-weight:700;}
+.tree-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-left:6px;font-weight:600;}
+
+/* ── RULES ── */
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.rule-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  transition:border-color .15s,box-shadow .15s,transform .15s;}
+.rule-card:hover{border-color:var(--pink);box-shadow:0 4px 20px rgba(244,114,182,.12);transform:translateY(-2px);}
+.rule-a{color:var(--cyan);font-weight:600;}
+.rule-arrow{color:var(--pink);font-weight:700;margin:0 6px;}
+.rule-b{color:var(--text);font-weight:600;}
+.rule-metrics{display:flex;gap:10px;margin-top:12px;}
+.metric-box{flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center;}
+.metric-val{font-size:15px;font-weight:700;color:var(--purple);}
+.metric-lbl{font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.conf-bar{margin-top:10px;height:4px;background:var(--border);border-radius:3px;overflow:hidden;}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--purple2),var(--pink));border-radius:3px;}
+
+/* ── QUANT ── */
+.quant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.quant-item{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.quant-label{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.quant-bars{display:flex;flex-direction:column;gap:8px;}
+.qb-row{display:flex;align-items:center;gap:8px;}
+.qb-name{width:80px;color:var(--text3);font-weight:600;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;font-size:11px;font-family:'Sora',sans-serif;}
+.qb-bar{flex:1;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.qb-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.qb-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);
+  min-width:28px;text-align:right;font-weight:600;}
+
+/* ── HEATMAP ── */
+.heatmap-wrap{overflow-x:auto;margin-bottom:20px;}
+.heatmap-table{border-collapse:separate;border-spacing:3px;min-width:400px;}
+.heatmap-table th{font-size:10px;font-weight:700;color:var(--text2);padding:8px 14px;
+  text-align:center;white-space:nowrap;letter-spacing:.06em;}
+.heatmap-table th.row-header{text-align:left;color:var(--purple);}
+.heatmap-cell{min-width:60px;height:46px;border-radius:9px;font-size:12px;font-weight:700;
+  text-align:center;vertical-align:middle;transition:transform .15s,box-shadow .15s;
+  cursor:default;position:relative;}
+.heatmap-cell:hover{transform:scale(1.08);z-index:2;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+.heatmap-total{font-weight:800;font-size:13px;}
+
+/* ── PARAM CONTROLS ── */
+.param-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;margin-bottom:20px;padding:18px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:14px;}
+.param-item{display:flex;flex-direction:column;gap:7px;}
+.param-label{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:.1em;text-transform:uppercase;}
+.param-input{padding:10px 14px;background:var(--bg);border:1px solid var(--border);
+  border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--text);outline:none;transition:border-color .2s;}
+.param-input:focus{border-color:var(--purple);}
+.param-value{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);font-weight:600;}
+
+/* ── DIM CONTROLS ── */
+.dim-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;
+  padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;}
+.dim-label{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:.08em;text-transform:uppercase;}
+.dim-select{padding:9px 14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  color:var(--text);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;
+  outline:none;cursor:pointer;transition:border-color .2s;}
+.dim-select:focus{border-color:var(--purple);}
+
+/* ── AI BOX ── */
+.ai-loading{display:flex;align-items:center;gap:16px;color:var(--text3);font-size:14px;
+  padding:40px;font-weight:600;justify-content:center;}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--purple);
+  border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+.ai-error{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);
+  border-radius:12px;padding:18px;color:#f87171;font-size:13px;font-weight:600;line-height:1.8;}
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:22px;}
+.ai-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;
+  transition:border-color .2s,transform .2s;}
+.ai-card:hover{border-color:var(--purple2);transform:translateY(-3px);}
+.ai-card-num{font-family:'DM Serif Display',serif;font-size:42px;font-weight:400;
+  color:var(--border2);line-height:1;margin-bottom:10px;}
+.ai-card-title{font-size:14px;font-weight:700;color:var(--purple);margin-bottom:8px;}
+.ai-card-text{font-size:13px;line-height:1.7;color:var(--text2);font-weight:500;}
+.ai-tag{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:6px;
+  font-size:10px;font-weight:700;background:var(--cyan2);color:var(--cyan);
+  border:1px solid rgba(34,211,238,.2);text-transform:uppercase;letter-spacing:.07em;}
+.ai-section-title{font-family:'DM Serif Display',serif;font-size:22px;
+  color:var(--text);margin-bottom:16px;padding-bottom:12px;
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.ai-rec{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:10px;transition:border-color .2s;}
+.ai-rec:hover{border-color:var(--purple);}
+.ai-rec-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.ai-rec-text{font-size:13px;line-height:1.7;color:var(--text2);font-weight:500;}
+.ai-rule-explain{background:var(--surface2);border-left:3px solid var(--cyan);
+  border-radius:0 12px 12px 0;padding:14px 18px;margin-bottom:12px;}
+.ai-rule-explain .rule-str{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:6px;}
+.ai-rule-explain .rule-plain{font-size:13px;color:var(--text2);line-height:1.7;font-weight:500;}
+.ai-rule-explain .rule-impl{font-size:12px;color:var(--pink);margin-top:6px;font-weight:600;}
+.ai-summary{background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(244,114,182,.06));
+  border:1px solid var(--border2);border-radius:14px;padding:20px 24px;margin-bottom:24px;
+  font-size:14px;line-height:1.8;color:var(--text2);font-weight:500;}
+.ai-stat-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+.ai-stat-chip{padding:10px 18px;border-radius:10px;background:var(--surface2);
+  border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--purple);}
+.col-insight{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;transition:border-color .2s;}
+.col-insight:hover{border-color:var(--cyan);}
+.col-insight .col-name{font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--cyan);font-weight:600;margin-bottom:6px;}
+.col-insight .col-text{font-size:12.5px;color:var(--text2);line-height:1.6;font-weight:500;}
+
+/* ══════════════════════════════════ */
+/* THEORY TAB — Rich educational UI */
+/* ══════════════════════════════════ */
+.theory-tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap;}
+.theory-tab{padding:8px 18px;border-radius:9px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);color:var(--text3);
+  transition:all .2s;background:var(--surface2);}
+.theory-tab:hover{border-color:var(--cyan);color:var(--cyan);}
+.theory-tab.active{background:linear-gradient(135deg,var(--purple3),var(--cyan));
+  color:#fff;border-color:transparent;box-shadow:0 3px 14px rgba(34,211,238,.25);}
+.theory-panel{display:none;}
+.theory-panel.active{display:block;animation:fadeUp .3s ease both;}
+
+.th-hero{background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(34,211,238,.08));
+  border:1px solid var(--border2);border-radius:18px;padding:32px;margin-bottom:24px;
+  position:relative;overflow:hidden;}
+.th-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+  border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.08) 0%,transparent 70%);}
+.th-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;
+  background:var(--cyan2);color:var(--cyan);border:1px solid rgba(34,211,238,.3);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+.th-title{font-family:'DM Serif Display',serif;font-size:30px;font-weight:400;
+  color:var(--text);margin-bottom:12px;line-height:1.2;}
+.th-desc{font-size:14px;line-height:1.85;color:var(--text2);font-weight:500;max-width:760px;}
+
+.th-section{margin-bottom:28px;}
+.th-section-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--purple);
+  margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.th-section-title::before{content:'';width:4px;height:22px;background:linear-gradient(var(--purple),var(--pink));border-radius:2px;flex-shrink:0;}
+
+.th-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:18px;}
+.th-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.th-card-icon{font-size:28px;margin-bottom:10px;}
+.th-card-title{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:8px;}
+.th-card-text{font-size:12.5px;color:var(--text2);line-height:1.7;font-weight:500;}
+
+.formula-box{background:var(--bg);border:1px solid var(--border2);border-radius:12px;
+  padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--cyan);font-weight:600;margin:14px 0;line-height:1.9;
+  border-left:3px solid var(--cyan);}
+.example-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:18px 22px;margin:14px 0;border-left:3px solid var(--gold);}
+.example-box .ex-label{font-size:10px;font-weight:700;color:var(--gold);
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
+.example-box .ex-text{font-size:13px;color:var(--text2);line-height:1.8;font-weight:500;}
+.example-box code{font-family:'JetBrains Mono',monospace;font-size:12px;
+  background:var(--bg);padding:2px 8px;border-radius:5px;color:var(--purple);}
+
+/* Apriori step-by-step */
+.apriori-steps{display:flex;flex-direction:column;gap:0;}
+.apriori-step{display:flex;gap:20px;position:relative;}
+.apriori-step:not(:last-child)::after{content:'';position:absolute;left:20px;top:46px;
+  width:2px;bottom:-4px;background:linear-gradient(var(--border2),transparent);}
+.step-num{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--purple3),var(--pink2));
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;
+  color:#fff;flex-shrink:0;box-shadow:0 4px 14px rgba(124,58,237,.4);}
+.step-body{flex:1;padding-bottom:24px;}
+.step-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.step-text{font-size:13px;color:var(--text2);line-height:1.7;font-weight:500;}
+.step-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);
+  border-radius:8px;padding:10px 14px;margin-top:8px;color:var(--cyan);
+  border:1px solid var(--border);}
+
+/* Worked Example Table */
+.worked-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0;}
+.worked-table th{background:var(--surface2);color:var(--purple);padding:10px 14px;
+  text-align:left;font-size:10px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;border-bottom:1px solid var(--border);}
+.worked-table td{padding:9px 14px;border-bottom:1px solid var(--border);
+  color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;}
+.worked-table tr:last-child td{border-bottom:none;}
+.worked-table tr:hover td{background:var(--surface2);}
+.hl-yes{color:var(--green);font-weight:700;}
+.hl-no{color:var(--text3);}
+.hl-rule{color:var(--pink);font-weight:700;}
+
+/* Comparison table */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+.compare-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.compare-card.highlight{border-color:var(--purple2);background:var(--purple4);}
+.compare-title{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:10px;letter-spacing:.07em;text-transform:uppercase;}
+.compare-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.compare-list li{font-size:12.5px;color:var(--text2);padding-left:16px;position:relative;line-height:1.6;font-weight:500;}
+.compare-list li::before{content:'→';position:absolute;left:0;color:var(--cyan);font-weight:700;}
+
+/* Multilevel hierarchy builder */
+.hierarchy-builder{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:20px;}
+.hb-title{font-size:12px;font-weight:700;color:var(--purple);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
+.hb-slots{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:46px;
+  background:var(--bg);border-radius:10px;padding:10px;border:1px dashed var(--border2);}
+.hb-slot{display:flex;align-items:center;gap:6px;padding:6px 12px;
+  background:linear-gradient(135deg,var(--purple4),var(--cyan2));
+  border:1px solid var(--border2);border-radius:8px;font-size:12px;font-weight:700;
+  color:var(--purple);cursor:grab;}
+.hb-slot .hb-slot-num{width:18px;height:18px;background:var(--purple2);color:#fff;
+  border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hb-slot .hb-remove{cursor:pointer;color:var(--text3);font-size:14px;margin-left:4px;line-height:1;
+  width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
+.hb-slot .hb-remove:hover{color:var(--pink);}
+.hb-available{display:flex;flex-wrap:wrap;gap:6px;}
+.hb-avail-chip{padding:6px 12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;}
+.hb-avail-chip:hover{border-color:var(--purple);color:var(--purple);background:var(--purple4);}
+.hb-avail-chip.used{opacity:.35;cursor:not-allowed;}
+.hb-actions{display:flex;gap:8px;margin-top:12px;}
+
+/* LIGHT MODE */
+body.light{
+  --bg:#f5f7fb;
+  --bg2:#ffffff;
+  --surface:#ffffff;
+  --surface2:#f1f3f9;
+
+  --border:#e3e6f0;
+  --border2:#d6d9e6;
+
+  --text:#1a1a2e;
+  --text2:#444;
+  --text3:#777;
+
+  --purple:#6d5dfc;
+  --purple2:#5b4ce0;
+  --pink:#ec4899;
+  --cyan:#06b6d4;
+
+  --shadow:0 4px 20px rgba(0,0,0,.08);
+  --shadow2:0 6px 30px rgba(0,0,0,.12);
+}
+
+body{
+  transition: background 0.3s, color 0.3s;
+}
+.card, .stat-card, .upload-zone{
+  transition: all 0.3s ease;
+}
+/* Multidim matrix */
+.matrix-legend{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.ml-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text3);font-weight:600;}
+.ml-dot{width:14px;height:14px;border-radius:4px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fadeUp{animation:fadeUp .4s ease both;}
+
+@media(max-width:700px){.main-wrap{padding:14px;}.card{padding:16px;}.charts-grid{grid-template-columns:1fr;}.compare-grid{grid-template-columns:1fr;}}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="lbox">
+    <div class="llogo">🎓 Associate Rule Mining</div>
+    <div class="lsub">Advanced Data Mining & Analytics Platform v3</div>
+    <div class="field"><label>Username</label><input id="user" placeholder="admin" autocomplete="off"></div>
+    <div class="field"><label>Password</label><input id="pass" type="password" placeholder="••••"></div>
+    <button class="btn-login" onclick="login()">Sign In ✦</button>
+    <p class="lhint">Default: admin / 1234</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="tlogo">🎓 Associate Rule Mining</div>
+    <div class="tright">
+    <button onclick="toggleTheme()" id="themeBtn" class="btn-sm">
+  🌙 Dark
+</button>
+      <span class="badge">Apriori Mining</span>
+      <span class="badge badge-cyan">Dynamic Analysis</span>
+      <span class="badge badge-pink" id="statusBadge">Ready</span>
+    </div>
+  </div>
+
+  <div class="main-wrap">
+
+    <!-- UPLOAD -->
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      <div class="uicon">📂</div>
+      <div class="utitle">Drop Dataset Here — Any Structure Supported</div>
+      <div class="usub">.xlsx · .xls · .csv · Auto-detects numeric vs categorical · All columns analyzed</div>
+      <div class="uinfo" id="uploadInfo"></div>
+    </div>
+
+    <!-- API KEY -->
+    <div class="key-card">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:16px;">🔑</span>
+        <span style="font-weight:700;color:var(--text);">Groq API Key</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;">— for AI Insights tab</span>
+      </div>
+      <div class="key-row">
+        <input class="key-input" id="groqKey" type="password" placeholder="gsk_...">
+        <button class="btn-sm" onclick="saveKey()">💾 Save & Run AI</button>
+      </div>
+      <div class="key-note">🔒 Memory only · console.groq.com · llama-3.3-70b-versatile</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="statsGrid" style="display:none;"></div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid" id="chartsSection" style="display:none;"></div>
+
+    <!-- MAIN TABS -->
+    <div id="analysisSection" style="display:none;">
+      <div class="card">
+        <div class="tabs">
+          <div class="tab" onclick="switchTab('theory')">📚 Theory &amp; Algorithms</div>
+          <div class="tab active" onclick="switchTab('quant')">⚖️ Quantitative</div>
+          <div class="tab" onclick="switchTab('multilevel')">🌳 Multilevel</div>
+          <div class="tab" onclick="switchTab('multidim')">🔷 Multi-Dim</div>
+          <div class="tab" onclick="switchTab('apriori')">🔗 Assoc. Rules</div>
+          <div class="tab" onclick="switchTab('compare')">📊 Compare</div>
+          <div class="tab" onclick="switchTab('table')">📋 Data Table</div>
+          <div class="tab" onclick="switchTab('ai')">🤖 AI Insights</div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- THEORY TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-theory">
+
+          <!-- Sub-tabs for Theory -->
+          <div class="theory-tabs">
+            <div class="theory-tab active" onclick="switchTheory('assoc')">🔗 Association Mining</div>
+            <div class="theory-tab" onclick="switchTheory('apriori')">⚙️ Apriori Algorithm</div>
+            <div class="theory-tab" onclick="switchTheory('multilevel')">🌳 Multilevel Mining</div>
+            <div class="theory-tab" onclick="switchTheory('multidim')">🔷 Multidimensional</div>
+            <div class="theory-tab" onclick="switchTheory('metrics')">📐 Key Metrics</div>
+          </div>
+
+          <!-- Association Mining -->
+          <div class="theory-panel active" id="theory-assoc">
+            <div class="th-hero">
+              <div class="th-badge">📖 Fundamentals</div>
+              <div class="th-title">Association Rule Mining</div>
+              <div class="th-desc">Association Rule Mining (ARM) is a rule-based machine learning method for discovering interesting relations between variables in large datasets. It identifies frequent if-then patterns and quantifies their strength using statistical measures like support and confidence.</div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Core Concept</div>
+              <div class="th-cards">
+                <div class="th-card"><div class="th-card-icon">📦</div><div class="th-card-title">Itemset</div><div class="th-card-text">A collection of one or more items. e.g. {HighMarks, HighAttendance} is a 2-itemset.</div></div>
+                <div class="th-card"><div class="th-card-icon">📏</div><div class="th-card-title">Frequent Itemset</div><div class="th-card-text">An itemset whose support ≥ minimum support threshold. Only these generate valid rules.</div></div>
+                <div class="th-card"><div class="th-card-icon">➡️</div><div class="th-card-title">Association Rule</div><div class="th-card-text">An implication X → Y where X (antecedent) and Y (consequent) are disjoint itemsets.</div></div>
+                <div class="th-card"><div class="th-card-icon">🔍</div><div class="th-card-title">Strong Rule</div><div class="th-card-text">A rule that satisfies both minimum support AND minimum confidence thresholds simultaneously.</div></div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Key Metrics</div>
+              <div class="formula-box">
+Support(X → Y)    = P(X ∪ Y) = count(X and Y) / total_transactions<br>
+Confidence(X → Y) = P(Y | X) = count(X and Y) / count(X)<br>
+Lift(X → Y)       = Confidence(X → Y) / Support(Y)<br>
+Conviction(X → Y) = (1 - Support(Y)) / (1 - Confidence(X → Y))
+              </div>
+              <div class="th-cards" style="margin-top:14px;">
+                <div class="th-card"><div class="th-card-title" style="color:var(--cyan)">Lift > 1</div><div class="th-card-text">X and Y appear together more than by chance. Positive correlation.</div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--text3)">Lift = 1</div><div class="th-card-text">X and Y are independent. The rule has no predictive power.</div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--pink)">Lift &lt; 1</div><div class="th-card-text">X and Y appear together less than chance. Negative correlation.</div></div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Worked Example — Student Dataset</div>
+              <div class="example-box">
+                <div class="ex-label">📊 Dataset: 10 Students</div>
+                <table class="worked-table">
+                  <thead><tr><th>Student</th><th>High Study</th><th>High Marks</th><th>Regular Attend.</th><th>CS Dept</th></tr></thead>
+                  <tbody>
+                    <tr><td>S1</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td><td class="hl-no">✗</td></tr>
+                    <tr><td>S2</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td><td class="hl-no">✗</td><td class="hl-yes">✓</td></tr>
+                    <tr><td>S3</td><td class="hl-no">✗</td><td class="hl-no">✗</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td></tr>
+                    <tr><td>S4</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td><td class="hl-yes">✓</td></tr>
+                    <tr><td>S5</td><td class="hl-yes">✓</td><td class="hl-no">✗</td><td class="hl-no">✗</td><td class="hl-no">✗</td></tr>
+                    <tr><td colspan="5" style="text-align:center;color:var(--text3);font-size:11px;">… 5 more students …</td></tr>
+                  </tbody>
+                </table>
+                <div class="ex-text" style="margin-top:14px;">
+                  Rule: <span class="hl-rule">High Study → High Marks</span><br>
+                  · Count(High Study AND High Marks) = 7 &nbsp;→&nbsp; <code>Support = 7/10 = 70%</code><br>
+                  · Count(High Study) = 8 &nbsp;→&nbsp; <code>Confidence = 7/8 = 87.5%</code><br>
+                  · Support(High Marks) = 7/10 = 70% &nbsp;→&nbsp; <code>Lift = 0.875 / 0.70 = 1.25</code><br><br>
+                  <strong style="color:var(--green)">Interpretation:</strong> High study hours predict high marks with 87.5% reliability, and this combination occurs 25% more than random chance (Lift = 1.25).
+                </div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Types of Association Rules</div>
+              <div class="compare-grid">
+                <div class="compare-card">
+                  <div class="compare-title">Single-Dimensional</div>
+                  <ul class="compare-list">
+                    <li>Rules involve one attribute</li>
+                    <li>e.g. buys(bread) → buys(butter)</li>
+                    <li>Simple, fast to mine</li>
+                    <li>Less contextual insight</li>
+                  </ul>
+                </div>
+                <div class="compare-card highlight">
+                  <div class="compare-title">Multi-Dimensional</div>
+                  <ul class="compare-list">
+                    <li>Rules span multiple attributes</li>
+                    <li>e.g. age=young ∧ income=high → buys(laptop)</li>
+                    <li>Richer, more actionable patterns</li>
+                    <li>Used in this platform</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apriori Algorithm -->
+          <div class="theory-panel" id="theory-apriori">
+            <div class="th-hero">
+              <div class="th-badge">⚙️ Algorithm</div>
+              <div class="th-title">The Apriori Algorithm</div>
+              <div class="th-desc">Apriori (1994, Agrawal & Srikant) is the classic frequent itemset mining algorithm. Its key insight: <em>any subset of a frequent itemset must also be frequent</em> — the "Apriori property" allows massive pruning of the search space.</div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">The Apriori Property (Anti-Monotonicity)</div>
+              <div class="example-box">
+                <div class="ex-label">🔑 Key Insight</div>
+                <div class="ex-text">
+                  If itemset {A, B} is <strong style="color:var(--pink)">infrequent</strong>, then <strong>ALL</strong> supersets like {A, B, C}, {A, B, D} must also be infrequent.<br><br>
+                  This means we can <strong style="color:var(--green)">prune entire branches</strong> of the search tree without checking them — drastically reducing computation.
+                </div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Step-by-Step Process</div>
+              <div class="apriori-steps">
+                <div class="apriori-step">
+                  <div class="step-num">1</div>
+                  <div class="step-body">
+                    <div class="step-title">Scan & Find Frequent 1-Itemsets (L₁)</div>
+                    <div class="step-text">Count occurrences of every single item. Remove items below minimum support threshold (min_sup). The surviving items form L₁.</div>
+                    <div class="step-code">min_sup = 0.40 (40%)<br>Count: {HighStudy:8, CS:6, Hostel:7, HighMarks:7, LowAttend:3}<br>Prune: LowAttend (3/10=30% &lt; 40%) ✗<br>L₁ = {HighStudy, CS, Hostel, HighMarks}</div>
+                  </div>
+                </div>
+                <div class="apriori-step">
+                  <div class="step-num">2</div>
+                  <div class="step-body">
+                    <div class="step-title">Generate Candidate 2-Itemsets (C₂)</div>
+                    <div class="step-text">Join L₁ with itself to produce all pairs. These are candidates — not yet verified as frequent.</div>
+                    <div class="step-code">C₂ = {HighStudy,CS}, {HighStudy,Hostel}, {HighStudy,HighMarks},<br>     {CS,Hostel}, {CS,HighMarks}, {Hostel,HighMarks}</div>
+                  </div>
+                </div>
+                <div class="apriori-step">
+                  <div class="step-num">3</div>
+                  <div class="step-body">
+                    <div class="step-title">Scan Database → Find Frequent 2-Itemsets (L₂)</div>
+                    <div class="step-text">Count each candidate pair in actual data. Remove pairs below min_sup.</div>
+                    <div class="step-code">Counts: {HighStudy,HighMarks}:7✓ {Hostel,HighMarks}:5✓ {CS,Hostel}:3✗<br>L₂ = {{HighStudy,HighMarks}, {Hostel,HighMarks}}</div>
+                  </div>
+                </div>
+                <div class="apriori-step">
+                  <div class="step-num">4</div>
+                  <div class="step-body">
+                    <div class="step-title">Generate Higher-Order Candidates & Repeat</div>
+                    <div class="step-text">Join L₂ pairs sharing (k-1) items to form C₃, then filter to L₃. Continue until no frequent itemsets remain.</div>
+                    <div class="step-code">C₃ = {HighStudy, Hostel, HighMarks} → check count → L₃ or ∅<br>Stop when Cₖ = ∅</div>
+                  </div>
+                </div>
+                <div class="apriori-step">
+                  <div class="step-num">5</div>
+                  <div class="step-body">
+                    <div class="step-title">Generate Association Rules from Frequent Itemsets</div>
+                    <div class="step-text">For each frequent itemset I with |I|≥2, generate all rules X→Y where X∪Y=I. Keep rules ≥ min_confidence.</div>
+                    <div class="step-code">From {HighStudy, HighMarks}:<br>  HighStudy → HighMarks: conf = 7/8 = 87.5% ✓<br>  HighMarks → HighStudy: conf = 7/7 = 100% ✓</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Full Worked Example — 5 Transactions</div>
+              <div class="example-box">
+                <div class="ex-label">📋 Transaction Database (min_sup=60%, min_conf=70%)</div>
+                <table class="worked-table">
+                  <thead><tr><th>TID</th><th>Items</th></tr></thead>
+                  <tbody>
+                    <tr><td>T1</td><td>A, B, C</td></tr>
+                    <tr><td>T2</td><td>A, B</td></tr>
+                    <tr><td>T3</td><td>A, C</td></tr>
+                    <tr><td>T4</td><td>B, C</td></tr>
+                    <tr><td>T5</td><td>A, B, C</td></tr>
+                  </tbody>
+                </table>
+                <div class="ex-text" style="margin-top:14px;">
+                  <strong style="color:var(--cyan)">Step 1 — L₁:</strong> A:4(80%)✓ B:4(80%)✓ C:4(80%)✓<br>
+                  <strong style="color:var(--cyan)">Step 2 — L₂:</strong> {A,B}:3(60%)✓ {A,C}:3(60%)✓ {B,C}:3(60%)✓<br>
+                  <strong style="color:var(--cyan)">Step 3 — L₃:</strong> {A,B,C}:2(40%)✗ pruned<br><br>
+                  <strong style="color:var(--purple)">Rules from {A,B} (sup=60%):</strong><br>
+                  <code>A → B</code>: conf = 3/4 = 75% ✓ &nbsp; <code>B → A</code>: conf = 3/4 = 75% ✓<br><br>
+                  <strong style="color:var(--purple)">Rules from {A,C} (sup=60%):</strong><br>
+                  <code>A → C</code>: conf = 3/4 = 75% ✓ &nbsp; <code>C → A</code>: conf = 3/4 = 75% ✓<br>
+                </div>
+              </div>
+            </div>
+
+            <div class="th-section">
+              <div class="th-section-title">Limitations & Alternatives</div>
+              <div class="compare-grid">
+                <div class="compare-card">
+                  <div class="compare-title" style="color:var(--pink)">Apriori Limitations</div>
+                  <ul class="compare-list">
+                    <li>Multiple database scans (slow on huge data)</li>
+                    <li>Generates many candidate itemsets</li>
+                    <li>Memory-intensive for dense data</li>
+                    <li>Performance drops with low min_sup</li>
+                  </ul>
+                </div>
+                <div class="compare-card">
+                  <div class="compare-title" style="color:var(--green)">Better Alternatives</div>
+                  <ul class="compare-list">
+                    <li>FP-Growth: tree-based, 2 scans only</li>
+                    <li>ECLAT: vertical data format, faster joins</li>
+                    <li>AIS: earlier, simpler approach</li>
+                    <li>Max-Miner: finds maximal itemsets</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multilevel Mining -->
+          <div class="theory-panel" id="theory-multilevel">
+            <div class="th-hero">
+              <div class="th-badge">🌳 Concept</div>
+              <div class="th-title">Multilevel Association Mining</div>
+              <div class="th-desc">Multilevel mining discovers association rules at various levels of a concept hierarchy. Rules at higher levels are more general but have stronger support; rules at lower levels are more specific but rarer — revealing granular patterns invisible at the top level.</div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">Concept Hierarchy</div>
+              <div class="example-box">
+                <div class="ex-label">Example Hierarchy — Education Dataset</div>
+                <div class="ex-text">
+                  <strong style="color:var(--cyan)">Level 0 (All)</strong> → All Students<br>
+                  <strong style="color:var(--purple)">Level 1 (Dept)</strong> → CS, ECE, MECH, CIVIL<br>
+                  <strong style="color:var(--gold)">Level 2 (Gender)</strong> → Male, Female<br>
+                  <strong style="color:var(--green)">Level 3 (Residence)</strong> → Hostel, Day Scholar<br>
+                  <strong style="color:var(--pink)">Level 4 (Performance)</strong> → High, Medium, Low<br><br>
+                  Level 1 rule: <code>CS → HighPerformance</code> (sup=45%)<br>
+                  Level 2 rule: <code>CS ∧ Female → HighPerformance</code> (sup=28%)<br>
+                  Level 3 rule: <code>CS ∧ Female ∧ Hostel → HighPerformance</code> (sup=14%)
+                </div>
+              </div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">Uniform vs Reduced Support</div>
+              <div class="compare-grid">
+                <div class="compare-card">
+                  <div class="compare-title">Uniform Min-Support</div>
+                  <ul class="compare-list"><li>Same threshold at all levels</li><li>Simple to implement</li><li>May miss rare lower-level rules</li><li>Used in basic Apriori</li></ul>
+                </div>
+                <div class="compare-card highlight">
+                  <div class="compare-title">Reduced Min-Support</div>
+                  <ul class="compare-list"><li>Lower threshold at deeper levels</li><li>Captures more specific patterns</li><li>More computationally intensive</li><li>Better for real-world datasets</li></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multidimensional -->
+          <div class="theory-panel" id="theory-multidim">
+            <div class="th-hero">
+              <div class="th-badge">🔷 Concept</div>
+              <div class="th-title">Multidimensional Association Mining</div>
+              <div class="th-desc">While single-dimensional rules involve one attribute (e.g. buys bread → buys butter), multidimensional rules involve two or more attributes simultaneously — revealing cross-attribute patterns that no single-column analysis can find.</div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">Types of Multidimensional Rules</div>
+              <div class="th-cards">
+                <div class="th-card"><div class="th-card-title" style="color:var(--cyan)">Inter-Dimension Rules</div><div class="th-card-text">Each attribute appears once. e.g. <em>age=young ∧ dept=CS → marks=high</em></div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--purple)">Hybrid Rules</div><div class="th-card-text">Some attributes appear multiple times at different levels. e.g. <em>dept=CS ∧ gender=F → gpa=high ∧ award=yes</em></div></div>
+              </div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">Heatmap Interpretation</div>
+              <div class="example-box">
+                <div class="ex-label">Reading the Cross-Tabulation Matrix</div>
+                <div class="ex-text">
+                  Each cell (row=X, col=Y) = count of records where both X and Y are true.<br><br>
+                  <code>Cell intensity</code> ∝ record count — darker = more records<br>
+                  <code>Row total</code> = all records with that row attribute value<br>
+                  <code>Col total</code> = all records with that column attribute value<br><br>
+                  <strong style="color:var(--green)">Hot spots</strong> (dark cells) reveal where two attributes co-occur most frequently — these are exactly the combinations your association rules should explain.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics Reference -->
+          <div class="theory-panel" id="theory-metrics">
+            <div class="th-hero">
+              <div class="th-badge">📐 Reference</div>
+              <div class="th-title">Complete Metrics Reference</div>
+              <div class="th-desc">A comprehensive reference for all metrics used in association rule mining, with formulas, ranges, interpretation guides, and when to use each one.</div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">All Metrics — Formulas & Ranges</div>
+              <div class="formula-box">
+Support(X→Y)    = |X∪Y| / N              Range: [0, 1]  Higher = more frequent<br>
+Confidence(X→Y) = |X∪Y| / |X|           Range: [0, 1]  Higher = more reliable<br>
+Lift(X→Y)       = Conf(X→Y)/Supp(Y)     Range: [0, ∞)  &gt;1 = positive corr<br>
+Leverage(X→Y)   = Supp(X∪Y)-Supp(X)·Supp(Y)  Range:[-1,1]  &gt;0 = dependent<br>
+Conviction(X→Y) = (1-Supp(Y))/(1-Conf)  Range: [0, ∞)  ∞ = perfect rule<br>
+Jaccard(X,Y)    = |X∪Y|/(|X|+|Y|-|X∪Y|) Range:[0,1]   Similarity measure
+              </div>
+            </div>
+            <div class="th-section">
+              <div class="th-section-title">Choosing the Right Threshold</div>
+              <div class="th-cards">
+                <div class="th-card"><div class="th-card-title" style="color:var(--cyan)">High min_sup (>50%)</div><div class="th-card-text">Very common patterns only. Few rules, high quality. Good for confirming expected patterns.</div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--purple)">Medium min_sup (20-50%)</div><div class="th-card-text">Balanced discovery. Most useful for educational/business datasets. Default recommendation.</div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--gold)">Low min_sup (<20%)</div><div class="th-card-text">Rare pattern discovery. Many rules, some noise. Use with high confidence to filter.</div></div>
+                <div class="th-card"><div class="th-card-title" style="color:var(--pink)">High conf (>80%)</div><div class="th-card-text">Only very reliable rules. Use when prediction accuracy matters more than coverage.</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /tab-theory -->
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- QUANTITATIVE TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel active" id="tab-quant">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+            <span class="card-title" style="font-size:17px;">⚖️ Full Quantitative Breakdown</span>
+            <span class="pill">All Columns</span>
+          </div>
+          <div class="quant-grid" id="quantGrid"></div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- MULTILEVEL TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-multilevel">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <span class="card-title" style="font-size:17px;">🌳 Multilevel Hierarchy</span>
+            <span class="pill">User-Defined Order</span>
+          </div>
+
+          <!-- Hierarchy Builder -->
+          <div class="hierarchy-builder">
+            <div class="hb-title">🏗️ Build Your Hierarchy — Click columns to add levels in order</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-weight:500;">Selected order (drag to reorder):</div>
+            <div class="hb-slots" id="hbSlots"><span style="color:var(--text3);font-size:12px;padding:4px;font-weight:500;">Click columns below to add hierarchy levels →</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500;">Available categorical columns:</div>
+            <div class="hb-available" id="hbAvailable"></div>
+            <div class="hb-actions">
+              <button class="btn-sm" onclick="generateTree()" style="padding:9px 20px;">🌳 Generate Hierarchy</button>
+              <button class="btn-sm" onclick="clearHierarchy()" style="padding:9px 16px;background:var(--surface2);color:var(--text2);box-shadow:none;border:1px solid var(--border);">🗑 Clear</button>
+            </div>
+          </div>
+
+          <ul class="tree-root" id="treeRoot"></ul>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- MULTI-DIM TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-multidim">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <span class="card-title" style="font-size:17px;">🔷 Multidimensional Analysis</span>
+            <span class="pill">Cross-Tabulation</span>
+          </div>
+
+          <div class="dim-controls">
+            <div><div class="dim-label" style="margin-bottom:6px;">Row Dimension</div>
+              <select class="dim-select" id="dimRow" onchange="rebuildHeatmap()"></select></div>
+            <div><div class="dim-label" style="margin-bottom:6px;">Column Dimension</div>
+              <select class="dim-select" id="dimCol" onchange="rebuildHeatmap()"></select></div>
+            <div style="display:flex;align-items:flex-end;"><button class="btn-sm" onclick="rebuildHeatmap()">🔄 Refresh Map</button></div>
+          </div>
+
+          <div class="matrix-legend">
+            <div class="ml-item"><div class="ml-dot" style="background:rgba(167,139,250,0.15);border:1px solid var(--border)"></div>Low count</div>
+            <div class="ml-item"><div class="ml-dot" style="background:rgba(167,139,250,0.45)"></div>Medium count</div>
+            <div class="ml-item"><div class="ml-dot" style="background:rgba(167,139,250,0.85)"></div>High count</div>
+            <div class="ml-item"><div class="ml-dot" style="background:linear-gradient(135deg,rgba(244,114,182,0.6),rgba(167,139,250,0.6))"></div>Row/Col total</div>
+          </div>
+
+          <div id="heatmapWrap" class="heatmap-wrap"></div>
+          <div id="topPairs"></div>
+          <div id="dimCharts" style="margin-top:20px;"></div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- APRIORI TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-apriori">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <span class="card-title" style="font-size:17px;">🔗 Association Rules</span>
+            <span class="pill pill-cyan" id="ruleCountBadge">0 rules</span>
+          </div>
+          <div class="param-controls">
+            <div class="param-item">
+              <label class="param-label">Min Support (%)</label>
+              <input type="number" class="param-input" id="minSupport" value="20" min="1" max="100" step="1">
+              <span class="param-value" id="supportDisplay">20%</span>
+            </div>
+            <div class="param-item">
+              <label class="param-label">Min Confidence (%)</label>
+              <input type="number" class="param-input" id="minConfidence" value="50" min="1" max="100" step="1">
+              <span class="param-value" id="confidenceDisplay">50%</span>
+            </div>
+            <div class="param-item">
+              <label class="param-label">Max Rules Shown</label>
+              <input type="number" class="param-input" id="maxRules" value="40" min="5" max="200" step="5">
+              <span class="param-value" id="rulesDisplay">40 rules</span>
+            </div>
+            <div class="param-item" style="display:flex;align-items:flex-end;">
+              <button class="btn-sm" onclick="rebuildRules()" style="width:100%;">🔄 Regenerate</button>
+            </div>
+          </div>
+          <div class="rules-grid" id="rulesGrid"></div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- COMPARE TAB (BONUS) -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-compare">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <span class="card-title" style="font-size:17px;">📊 Group Comparison</span>
+            <span class="pill pill-gold">Bonus Feature</span>
+          </div>
+          <div class="dim-controls" style="margin-bottom:16px;">
+            <div><div class="dim-label" style="margin-bottom:6px;">Compare Groups By</div>
+              <select class="dim-select" id="compareCol" onchange="buildCompare()"></select></div>
+            <div><div class="dim-label" style="margin-bottom:6px;">Measure (Numeric)</div>
+              <select class="dim-select" id="compareNum" onchange="buildCompare()"></select></div>
+          </div>
+          <div id="compareOut"></div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- TABLE TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-table">
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <input class="search-inp" id="searchBox" placeholder="🔍  Search across all columns…">
+            <span id="tableCount" class="pill" style="align-self:center;"></span>
+          </div>
+          <div class="table-scroll"><table class="data-table" id="dataTable"></table></div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- AI INSIGHTS TAB -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-ai">
+          <div id="aiBox">
+            <div class="ai-loading"><div class="spinner"></div>&nbsp;Enter Groq API key above and click Save &amp; Run AI</div>
+          </div>
+        </div>
+
+      </div><!-- /card -->
+    </div><!-- /analysisSection -->
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════ */
+/* GLOBALS                                         */
+/* ═══════════════════════════════════════════════ */
+const PAL=['#a78bfa','#f472b6','#22d3ee','#34d399','#fbbf24','#f87171','#818cf8','#38bdf8','#a3e635','#fb923c'];
+let globalData=[],groqKey='',charts={},detectedColumns={num:[],cat:[],all:[]},datasetProfile={};
+let hierarchyOrder=[];
+
+/* ─── LOGIN ─── */
+function login(){
+  if(document.getElementById('user').value==='admin'&&document.getElementById('pass').value==='1234'){
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+  }else alert('❌ Invalid — use admin / 1234');
+}
+document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+/* ─── API KEY ─── */
+function saveKey(){
+  groqKey=document.getElementById('groqKey').value.trim();
+  document.getElementById('groqKey').style.borderColor=groqKey?'#34d399':'#f87171';
+  if(groqKey&&globalData.length) callGroqAI(globalData);
+  else if(groqKey) alert('✅ Key saved! Upload a dataset to run AI insights.');
+  else alert('⚠️ Enter a valid Groq key.');
+}
+
+/* ─── PARAM LISTENERS ─── */
+document.getElementById('minSupport').addEventListener('input',e=>document.getElementById('supportDisplay').innerText=e.target.value+'%');
+document.getElementById('minConfidence').addEventListener('input',e=>document.getElementById('confidenceDisplay').innerText=e.target.value+'%');
+document.getElementById('maxRules').addEventListener('input',e=>document.getElementById('rulesDisplay').innerText=e.target.value+' rules');
+
+/* ─── FILE UPLOAD ─── */
+const uploadZone=document.getElementById('uploadZone');
+const fileInput=document.getElementById('fileInput');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag');if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])readFile(e.target.files[0]);});
+
+function readFile(file){
+  const reader=new FileReader();
+  reader.onload=evt=>{
+    const wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array'});
+    const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+    if(!data.length){alert('⚠️ Empty dataset or unsupported format.');return;}
+    globalData=data;
+    const info=document.getElementById('uploadInfo');
+    info.innerText='✓ '+file.name+' · '+data.length+' rows · '+Object.keys(data[0]).length+' columns';
+    info.style.display='inline-block';
+    document.getElementById('statusBadge').innerText=data.length+' records';
+    detectStructure(data);
+    process(data);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ─── DETECT STRUCTURE ─── */
+function detectStructure(data){
+  const cols=Object.keys(data[0]);
+  detectedColumns={num:[],cat:[],all:cols};
+  datasetProfile={totalRecords:data.length,columns:{}};
+  cols.forEach(col=>{
+    const vals=data.map(d=>d[col]).filter(v=>v!=null&&v!=='');
+    const nums=vals.filter(v=>!isNaN(parseFloat(v))&&String(v).trim()!=='').map(v=>parseFloat(v));
+    const isNum=nums.length/vals.length>0.8;
+    if(isNum){
+      detectedColumns.num.push(col);
+      const min=Math.min(...nums),max=Math.max(...nums),avg=nums.reduce((a,b)=>a+b,0)/nums.length;
+      datasetProfile.columns[col]={type:'numeric',min,max,avg:+avg.toFixed(2)};
+    }else{
+      detectedColumns.cat.push(col);
+      const uniq=[...new Set(vals)];
+      datasetProfile.columns[col]={type:'categorical',uniqueCount:uniq.length,values:uniq.slice(0,30)};
+    }
+  });
+}
+
+function autoCat(val,col){
+  const p=datasetProfile.columns[col];
+  if(!p||p.type!=='numeric')return String(val);
+  const r=p.max-p.min,t=r/3;
+  if(val<p.min+t)return 'Low_'+col;
+  if(val<p.min+2*t)return 'Mid_'+col;
+  return 'High_'+col;
+}
+
+/* ─── PROCESS ─── */
+function process(data){
+  destroyCharts();
+  document.getElementById('statsGrid').style.display='grid';
+  document.getElementById('chartsSection').style.display='grid';
+  document.getElementById('analysisSection').style.display='block';
+  fillStats(data);
+  populateSelectors();
+  buildHierarchyUI();
+  setTimeout(()=>{
+    drawCharts(data);
+    buildQuantitative(data);
+    buildHeatmap(data);
+    buildRules(data);
+    buildTable(data);
+    buildCompare();
+    if(groqKey)callGroqAI(data);
+  },80);
+}
+
+/* ─── POPULATE SELECTORS ─── */
+function populateSelectors(){
+  const cats=detectedColumns.cat;
+  const nums=detectedColumns.num;
+  ['dimRow','dimCol','compareCol'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el){el.innerHTML=cats.map((c,j)=>`<option value="${c}">${c}</option>`).join('');if(i===1&&cats.length>1)el.selectedIndex=1;}
+  });
+  const cn=document.getElementById('compareNum');
+  if(cn)cn.innerHTML=nums.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+/* ─── STATS ─── */
+function fillStats(data){
+  const g=document.getElementById('statsGrid');g.innerHTML='';
+  const cards=[
+    {icon:'📊',val:data.length,lbl:'Total Records',gc:'linear-gradient(135deg,#a78bfa,#8b5cf6)',blob:'rgba(167,139,250,.05)'},
+    {icon:'🔢',val:detectedColumns.num.length,lbl:'Numeric Cols',gc:'linear-gradient(135deg,#22d3ee,#0ea5e9)',blob:'rgba(34,211,238,.05)'},
+    {icon:'🏷️',val:detectedColumns.cat.length,lbl:'Categorical Cols',gc:'linear-gradient(135deg,#f472b6,#ec4899)',blob:'rgba(244,114,182,.05)'},
+    {icon:'📐',val:detectedColumns.all.length,lbl:'Total Columns',gc:'linear-gradient(135deg,#34d399,#059669)',blob:'rgba(52,211,153,.05)'},
+  ];
+  detectedColumns.num.slice(0,2).forEach((col,i)=>{
+    const p=datasetProfile.columns[col];
+    cards.push({icon:'⭐',val:p.avg,lbl:'Avg '+col,gc:'linear-gradient(135deg,#fbbf24,#f59e0b)',blob:'rgba(251,191,36,.05)'});
+  });
+  cards.forEach(c=>g.innerHTML+=`<div class="stat-card fadeUp" style="--gc:${c.gc};--blob:${c.blob}"><div class="sicon">${c.icon}</div><div class="sval">${c.val}</div><div class="slbl">${c.lbl}</div></div>`);
+}
+
+/* ─── CHARTS ─── */
+function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
+function setDef(){Chart.defaults.color='#7c6fa0';Chart.defaults.borderColor='rgba(45,37,80,.6)';Chart.defaults.font.family="'Sora',sans-serif";Chart.defaults.font.size=11;Chart.defaults.font.weight='600';}
+
+function drawCharts(data){
+  setDef();const cs=document.getElementById('chartsSection');cs.innerHTML='';
+  if(detectedColumns.num.length>=2){
+    const x=detectedColumns.num[0],y=detectedColumns.num[1];
+    cs.innerHTML+=`<div class="card fadeUp"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><span class="card-title" style="font-size:16px;">📈 ${x} vs ${y}</span><span class="pill">Scatter</span></div><div class="chart-wrap"><canvas id="ch0"></canvas></div></div>`;
+    setTimeout(()=>{
+      const pts=data.map(d=>({x:parseFloat(d[x])||0,y:parseFloat(d[y])||0}));
+      charts.ch0=new Chart(document.getElementById('ch0'),{type:'scatter',data:{datasets:[{label:x+' vs '+y,data:pts,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.35)',pointRadius:5,pointHoverRadius:7}]},options:{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:x,color:'#7c6fa0'}},y:{title:{display:true,text:y,color:'#7c6fa0'}}},animation:{duration:800}}});
+    },100);
+  }
+  if(detectedColumns.cat.length>=1&&detectedColumns.num.length>=1){
+    const cat=detectedColumns.cat[0],num=detectedColumns.num[0];
+    cs.innerHTML+=`<div class="card fadeUp"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><span class="card-title" style="font-size:16px;">📊 ${cat} Avg ${num}</span><span class="pill">Bar</span></div><div class="chart-wrap"><canvas id="ch1"></canvas></div></div>`;
+    setTimeout(()=>{
+      const cats=[...new Set(data.map(d=>d[cat]))].filter(Boolean).slice(0,10);
+      const vals=cats.map(c=>{const s=data.filter(d=>d[cat]===c);return+(s.reduce((sum,d)=>(sum+(parseFloat(d[num])||0)),0)/s.length).toFixed(2);});
+      charts.ch1=new Chart(document.getElementById('ch1'),{type:'bar',data:{labels:cats,datasets:[{data:vals,backgroundColor:PAL.map(c=>c+'99'),borderColor:PAL,borderWidth:1,borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(45,37,80,.4)'}},y:{grid:{color:'rgba(45,37,80,.4)'}}},animation:{duration:800}}});
+    },150);
+  }
+  if(detectedColumns.cat.length>=1){
+    const cat=detectedColumns.cat[0];
+    cs.innerHTML+=`<div class="card fadeUp"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><span class="card-title" style="font-size:16px;">🍩 ${cat} Split</span><span class="pill pill-pink">Doughnut</span></div><div class="chart-wrap"><canvas id="ch2"></canvas></div></div>`;
+    setTimeout(()=>{
+      const cats=[...new Set(data.map(d=>d[cat]))].filter(Boolean).slice(0,8);
+      charts.ch2=new Chart(document.getElementById('ch2'),{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>data.filter(d=>d[cat]===c).length),backgroundColor:PAL.map(c=>c+'88'),borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#7c6fa0'}}},cutout:'64%',animation:{duration:1000}}});
+    },200);
+  }
+  if(detectedColumns.num.length>=1){
+    const num=detectedColumns.num[0];
+    cs.innerHTML+=`<div class="card fadeUp"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><span class="card-title" style="font-size:16px;">📉 ${num} Histogram</span><span class="pill pill-cyan">Distribution</span></div><div class="chart-wrap"><canvas id="ch3"></canvas></div></div>`;
+    setTimeout(()=>{
+      const vals=data.map(d=>parseFloat(d[num])||0).filter(v=>!isNaN(v));
+      const min=Math.min(...vals),max=Math.max(...vals),bc=10,bs=(max-min)/bc;
+      const bins=Array(bc).fill(0);vals.forEach(v=>{const i=Math.min(Math.floor((v-min)/bs),bc-1);bins[i]++;});
+      const labels=bins.map((_,i)=>`${(min+i*bs).toFixed(1)}`);
+      charts.ch3=new Chart(document.getElementById('ch3'),{type:'bar',data:{labels,datasets:[{data:bins,backgroundColor:PAL.map(c=>c+'88'),borderColor:PAL,borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(45,37,80,.4)'}},y:{grid:{color:'rgba(45,37,80,.4)'}}},animation:{duration:800}}});
+    },250);
+  }
+}
+
+/* ─── TABS ─── */
+function switchTab(id){
+  const order=['theory','quant','multilevel','multidim','apriori','compare','table','ai'];
+  document.querySelectorAll('.tabs .tab').forEach((t,i)=>t.classList.toggle('active',order[i]===id));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
+}
+function switchTheory(id){
+  document.querySelectorAll('.theory-tab').forEach((t,i)=>{
+    const ids=['assoc','apriori','multilevel','multidim','metrics'];
+    t.classList.toggle('active',ids[i]===id);
+  });
+  document.querySelectorAll('.theory-panel').forEach(p=>p.classList.toggle('active',p.id==='theory-'+id));
+}
+
+/* ─── QUANTITATIVE ─── */
+function buildQuantitative(data){
+  const grid=document.getElementById('quantGrid');grid.innerHTML='';
+  detectedColumns.num.forEach(col=>{
+    const vals=data.map(d=>parseFloat(d[col])||0).filter(v=>!isNaN(v));
+    const p=datasetProfile.columns[col];
+    const t=(p.max-p.min)/3;
+    const bands=[{n:`Low (<${(p.min+t).toFixed(1)})`,c:vals.filter(v=>v<p.min+t).length,cl:PAL[2]},
+                 {n:`Mid`,c:vals.filter(v=>v>=p.min+t&&v<p.min+2*t).length,cl:PAL[0]},
+                 {n:`High (>${(p.min+2*t).toFixed(1)})`,c:vals.filter(v=>v>=p.min+2*t).length,cl:PAL[1]}];
+    grid.innerHTML+=`<div class="quant-item fadeUp"><div class="quant-label">🔢 ${col}</div><div class="quant-bars">${bands.map(b=>{const pct=Math.round(b.c/data.length*100);return`<div class="qb-row"><div class="qb-name" title="${b.n}">${b.n.split(' ')[0]}</div><div class="qb-bar"><div class="qb-fill" style="width:${pct}%;background:${b.cl}"></div></div><div class="qb-val">${b.c}</div></div>`}).join('')}</div></div>`;
+  });
+  detectedColumns.cat.forEach(col=>{
+    const vals=[...new Set(data.map(d=>d[col]))].filter(Boolean);
+    const sorted=vals.map(v=>({v,c:data.filter(d=>d[col]===v).length})).sort((a,b)=>b.c-a.c).slice(0,8);
+    grid.innerHTML+=`<div class="quant-item fadeUp"><div class="quant-label">🏷️ ${col}</div><div class="quant-bars">${sorted.map(({v,c},i)=>{const pct=Math.round(c/data.length*100);return`<div class="qb-row"><div class="qb-name" title="${v}">${v}</div><div class="qb-bar"><div class="qb-fill" style="width:${pct}%;background:${PAL[i%PAL.length]}"></div></div><div class="qb-val">${c}</div></div>`}).join('')}</div></div>`;
+  });
+}
+
+/* ─── HIERARCHY BUILDER ─── */
+function buildHierarchyUI(){
+  hierarchyOrder=[];
+  const avail=document.getElementById('hbAvailable');
+  avail.innerHTML=detectedColumns.cat.map(c=>`<div class="hb-avail-chip" id="hc_${cssId(c)}" onclick="addHierarchyLevel('${c}')">${c}</div>`).join('');
+  document.getElementById('hbSlots').innerHTML='<span style="color:var(--text3);font-size:12px;padding:4px;font-weight:500;">Click columns below to add hierarchy levels →</span>';
+}
+
+function cssId(s){return s.replace(/[^a-zA-Z0-9]/g,'_');}
+
+function addHierarchyLevel(col){
+  if(hierarchyOrder.includes(col))return;
+  hierarchyOrder.push(col);
+  renderHierarchySlots();
+}
+
+function removeHierarchyLevel(col){
+  hierarchyOrder=hierarchyOrder.filter(c=>c!==col);
+  renderHierarchySlots();
+}
+
+function renderHierarchySlots(){
+  const slots=document.getElementById('hbSlots');
+  if(!hierarchyOrder.length){
+    slots.innerHTML='<span style="color:var(--text3);font-size:12px;padding:4px;font-weight:500;">Click columns below to add hierarchy levels →</span>';
+  }else{
+    slots.innerHTML=hierarchyOrder.map((c,i)=>`<div class="hb-slot"><div class="hb-slot-num">${i+1}</div>${c}<span class="hb-remove" onclick="removeHierarchyLevel('${c}')">✕</span></div>`).join('');
+  }
+  // Update chip availability
+  detectedColumns.cat.forEach(c=>{
+    const el=document.getElementById('hc_'+cssId(c));
+    if(el)el.classList.toggle('used',hierarchyOrder.includes(c));
+  });
+}
+
+function clearHierarchy(){hierarchyOrder=[];renderHierarchySlots();document.getElementById('treeRoot').innerHTML='';}
+
+function generateTree(){
+  if(!globalData.length){alert('Upload a dataset first.');return;}
+  if(!hierarchyOrder.length){alert('Add at least one hierarchy level.');return;}
+  buildTree(globalData,hierarchyOrder);
+}
+
+/* ─── TREE BUILD (recursive, user-defined order) ─── */
+function buildTree(data,order){
+  const root=document.getElementById('treeRoot');root.innerHTML='';
+  if(!order.length){root.innerHTML='<li><div style="color:var(--text3);font-size:13px;padding:10px;">Select hierarchy levels above and click Generate.</div></li>';return;}
+
+  function makeLevel(subset,depth,parentEl){
+    if(depth>=order.length)return;
+    const col=order[depth];
+    const vals=[...new Set(subset.map(d=>d[col]))].filter(v=>v!=null&&v!=='').sort((a,b)=>String(a).localeCompare(String(b)));
+    vals.forEach(val=>{
+      const sub=subset.filter(d=>String(d[col])===String(val));
+      const pct=(sub.length/data.length*100).toFixed(1);
+      const hasChildren=depth+1<order.length;
+      const li=document.createElement('li');
+      const colorIdx=depth%PAL.length;
+      li.innerHTML=`<div class="tree-node" style="border-left:3px solid ${PAL[colorIdx]};" onclick="toggleTreeNode(this)">
+        <span class="tree-toggle">${hasChildren?'▶':'·'}</span>
+        <span style="color:${PAL[colorIdx]};font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-right:4px;">${col}</span>
+        <span style="color:var(--text);font-weight:700;">${val}</span>
+        <span class="tree-pct">${pct}%</span>
+        <span class="tree-count">${sub.length}</span>
+      </div>`;
+      if(hasChildren){
+        const ul=document.createElement('ul');ul.className='tree-children';
+        makeLevel(sub,depth+1,ul);
+        li.appendChild(ul);
+      }
+      parentEl.appendChild(li);
+    });
+  }
+
+  // Root node
+  const rootLi=document.createElement('li');
+  rootLi.innerHTML=`<div class="tree-node" style="border-left:3px solid var(--pink);background:linear-gradient(135deg,rgba(244,114,182,.06),rgba(167,139,250,.06));" onclick="toggleTreeNode(this)">
+    <span class="tree-toggle">▼</span>
+    <span style="font-size:13px;font-weight:800;color:var(--text);">📊 All Records</span>
+    <span class="tree-pct">100%</span>
+    <span class="tree-count">${data.length}</span>
+  </div>`;
+  const rootUl=document.createElement('ul');rootUl.className='tree-children open';
+  makeLevel(data,0,rootUl);
+  rootLi.appendChild(rootUl);
+  root.appendChild(rootLi);
+}
+
+function toggleTreeNode(el){
+  const ch=el.nextElementSibling;
+  if(!ch)return;
+  const o=ch.classList.toggle('open');
+  const tog=el.querySelector('.tree-toggle');
+  if(tog)tog.innerText=o?'▼':'▶';
+}
+
+/* ─── HEATMAP (Fixed — always uses actual data) ─── */
+function buildHeatmap(data){
+  const cats=detectedColumns.cat;
+  if(cats.length<2){
+    document.getElementById('heatmapWrap').innerHTML='<p style="color:var(--text3);padding:20px;font-size:13px;">Need at least 2 categorical columns for multidimensional analysis.</p>';
+    return;
+  }
+  const dim1El=document.getElementById('dimRow');
+  const dim2El=document.getElementById('dimCol');
+  const dim1=dim1El?dim1El.value:cats[0];
+  const dim2=dim2El?dim2El.value:(cats.length>1?cats[1]:cats[0]);
+
+  if(dim1===dim2){
+    document.getElementById('heatmapWrap').innerHTML='<p style="color:var(--text3);padding:20px;font-size:13px;">⚠️ Please select two different dimensions.</p>';
+    return;
+  }
+
+  const rows=[...new Set(data.map(d=>String(d[dim1])))].filter(v=>v&&v!=='undefined'&&v!=='null').sort().slice(0,15);
+  const cols=[...new Set(data.map(d=>String(d[dim2])))].filter(v=>v&&v!=='undefined'&&v!=='null').sort().slice(0,15);
+
+  if(!rows.length||!cols.length){
+    document.getElementById('heatmapWrap').innerHTML='<p style="color:var(--text3);padding:20px;font-size:13px;">⚠️ No valid values found for selected dimensions.</p>';
+    return;
+  }
+
+  // Build count matrix
+  const matrix={};
+  rows.forEach(r=>{matrix[r]={};cols.forEach(c=>{matrix[r][c]=0;});});
+  data.forEach(d=>{
+    const r=String(d[dim1]),c=String(d[dim2]);
+    if(matrix[r]&&matrix[r][c]!==undefined)matrix[r][c]++;
+  });
+
+  const maxVal=Math.max(...rows.flatMap(r=>cols.map(c=>matrix[r][c])));
+
+  // Render table
+  let html=`<table class="heatmap-table">
+    <thead><tr>
+      <th class="row-header" style="text-align:left;padding:8px 16px;">${dim1} \\ ${dim2}</th>
+      ${cols.map(c=>`<th title="${c}">${c.length>10?c.slice(0,10)+'…':c}</th>`).join('')}
+      <th style="color:var(--pink)">ROW Σ</th>
+    </tr></thead>
+    <tbody>`;
+
+  rows.forEach(r=>{
+    const rowTotal=cols.reduce((s,c)=>s+matrix[r][c],0);
+    html+=`<tr><td style="padding:8px 16px;font-weight:700;color:var(--text2);white-space:nowrap;font-size:12px;">${r}</td>`;
+    cols.forEach(c=>{
+      const v=matrix[r][c];
+      const intensity=maxVal>0?v/maxVal:0;
+      const alpha=0.08+intensity*0.78;
+      const bg=`rgba(167,139,250,${alpha.toFixed(2)})`;
+      const textCol=intensity>0.6?'#f1eeff':'#a78bfa';
+      const pct=data.length>0?(v/data.length*100).toFixed(1):0;
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${textCol};" title="${dim1}=${r}, ${dim2}=${c}: ${v} records (${pct}%)">${v>0?v:'—'}</td>`;
+    });
+    const rpct=(rowTotal/data.length*100).toFixed(1);
+    html+=`<td class="heatmap-cell heatmap-total" style="background:rgba(244,114,182,0.18);color:var(--pink);" title="Row total: ${rowTotal} (${rpct}%)">${rowTotal}</td></tr>`;
+  });
+
+  // Column totals row
+  html+=`<tr><td style="padding:8px 16px;font-weight:800;color:var(--pink);font-size:12px;">COL Σ</td>`;
+  cols.forEach(c=>{
+    const colTotal=rows.reduce((s,r)=>s+matrix[r][c],0);
+    const cpct=(colTotal/data.length*100).toFixed(1);
+    html+=`<td class="heatmap-cell heatmap-total" style="background:rgba(244,114,182,0.12);color:var(--pink);" title="Col total: ${colTotal} (${cpct}%)">${colTotal}</td>`;
+  });
+  html+=`<td class="heatmap-cell heatmap-total" style="background:linear-gradient(135deg,rgba(244,114,182,0.25),rgba(167,139,250,0.25));color:var(--text);font-size:14px;">${data.length}</td></tr>`;
+  html+=`</tbody></table>`;
+  document.getElementById('heatmapWrap').innerHTML=html;
+
+  // Top pairs
+  const pairs=[];
+  rows.forEach(r=>cols.forEach(c=>{if(matrix[r][c]>0)pairs.push({r,c,v:matrix[r][c],pct:(matrix[r][c]/data.length*100).toFixed(1)});}));
+  pairs.sort((a,b)=>b.v-a.v);
+  let topHtml=`<div style="margin-top:20px;margin-bottom:10px;font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);">🔝 Top Combinations</div><div style="display:flex;flex-wrap:wrap;gap:10px;">`;
+  pairs.slice(0,6).forEach((p,i)=>{
+    topHtml+=`<div style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">#${i+1} pair</div>
+      <div style="font-size:12px;font-weight:700;color:var(--purple);">${p.r}</div>
+      <div style="font-size:10px;color:var(--text3);margin:2px 0;">+</div>
+      <div style="font-size:12px;font-weight:700;color:var(--cyan);">${p.c}</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--pink);margin-top:8px;">${p.v}</div>
+      <div style="font-size:11px;color:var(--text3);">${p.pct}% of total</div>
+    </div>`;
+  });
+  topHtml+=`</div>`;
+  document.getElementById('topPairs').innerHTML=topHtml;
+
+  // Mini bar chart for row totals
+  const dc=document.getElementById('dimCharts');dc.innerHTML='';
+  if(detectedColumns.num.length>0){
+    const numCol=detectedColumns.num[0];
+    dc.innerHTML=`<div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);margin-bottom:12px;">📊 ${dim1} × Avg ${numCol}</div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;"><canvas id="dimBarChart" style="max-height:220px;"></canvas></div>`;
+    setTimeout(()=>{
+      setDef();
+      const rowAvgs=rows.map(r=>{
+        const sub=data.filter(d=>String(d[dim1])===r);
+        const vals=sub.map(d=>parseFloat(d[numCol])||0).filter(v=>!isNaN(v));
+        return vals.length?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2):0;
+      });
+      if(charts.dimBar)try{charts.dimBar.destroy();}catch(e){}
+      charts.dimBar=new Chart(document.getElementById('dimBarChart'),{
+        type:'bar',
+        data:{labels:rows,datasets:[{label:'Avg '+numCol,data:rowAvgs,backgroundColor:PAL.map(c=>c+'88'),borderColor:PAL,borderWidth:1,borderRadius:8,borderSkipped:false}]},
+        options:{plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(45,37,80,.4)'}},y:{grid:{color:'rgba(45,37,80,.4)'}}},animation:{duration:700}}
+      });
+    },100);
+  }
+}
+
+function rebuildHeatmap(){if(globalData.length)buildHeatmap(globalData);}
+
+/* ─── APRIORI ─── */
+function apriori(data,minSup,minConf){
+  const txns=data.map(d=>{
+    const items=[];
+    detectedColumns.cat.forEach(col=>{if(d[col]!=null&&d[col]!=='')items.push(String(d[col]));});
+    detectedColumns.num.forEach(col=>{items.push(autoCat(parseFloat(d[col])||0,col));});
+    return [...new Set(items)];
+  });
+  const total=txns.length,counts={};
+  txns.forEach(t=>{
+    for(let i=0;i<t.length;i++)for(let j=i+1;j<t.length;j++){
+      const k=[t[i],t[j]].sort().join('|||');
+      counts[k]=(counts[k]||0)+1;
+    }
+  });
+  const rules=[];
+  Object.entries(counts).forEach(([k,v])=>{
+    const sup=v/total;
+    if(sup>=minSup){
+      const[a,b]=k.split('|||');
+      const sA=txns.filter(t=>t.includes(a)).length/total;
+      const sB=txns.filter(t=>t.includes(b)).length/total;
+      const conf=sA>0?+(sup/sA).toFixed(3):0;
+      const lift=sB>0?+(conf/sB).toFixed(2):0;
+      if(conf>=minConf)rules.push({a,b,support:+sup.toFixed(3),confidence:conf,lift});
+    }
+  });
+  return rules.sort((x,y)=>y.support-x.support||y.confidence-x.confidence);
+}
+
+function buildRules(data){
+  const minSup=parseFloat(document.getElementById('minSupport').value)/100;
+  const minConf=parseFloat(document.getElementById('minConfidence').value)/100;
+  const maxR=parseInt(document.getElementById('maxRules').value);
+  const rules=apriori(data,minSup,minConf);
+  document.getElementById('ruleCountBadge').innerText=rules.length+' rules';
+  const grid=document.getElementById('rulesGrid');
+  if(!rules.length){
+    grid.innerHTML='<div style="color:var(--text3);font-size:13px;font-weight:600;padding:20px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">No rules found with current parameters. Try lowering Min Support or Min Confidence.</div>';
+    return;
+  }
+  grid.innerHTML=rules.slice(0,maxR).map(r=>{
+    const liftColor=r.lift>1.2?'var(--green)':r.lift<0.8?'var(--pink)':'var(--text3)';
+    return`<div class="rule-card">
+      <div style="margin-bottom:10px;"><span class="rule-a">${r.a}</span><span class="rule-arrow">→</span><span class="rule-b">${r.b}</span></div>
+      <div class="rule-metrics">
+        <div class="metric-box"><div class="metric-val" style="color:var(--purple)">${(r.support*100).toFixed(1)}%</div><div class="metric-lbl">Support</div></div>
+        <div class="metric-box"><div class="metric-val" style="color:var(--cyan)">${(r.confidence*100).toFixed(1)}%</div><div class="metric-lbl">Confidence</div></div>
+        <div class="metric-box"><div class="metric-val" style="color:${liftColor}">${r.lift}x</div><div class="metric-lbl">Lift</div></div>
+      </div>
+      <div class="conf-bar"><div class="conf-fill" style="width:${r.confidence*100}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function rebuildRules(){if(!globalData.length){alert('Upload a dataset first.');return;}buildRules(globalData);}
+
+/* ─── COMPARE (BONUS) ─── */
+function buildCompare(){
+  if(!globalData.length)return;
+  const col=document.getElementById('compareCol')?.value;
+  const num=document.getElementById('compareNum')?.value;
+  if(!col||!num){document.getElementById('compareOut').innerHTML='';return;}
+  const groups=[...new Set(globalData.map(d=>d[col]))].filter(Boolean).sort();
+  const stats=groups.map(g=>{
+    const sub=globalData.filter(d=>d[col]===g);
+    const vals=sub.map(d=>parseFloat(d[num])||0).filter(v=>!isNaN(v));
+    if(!vals.length)return null;
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+    const sorted=[...vals].sort((a,b)=>a-b);
+    const median=sorted.length%2===0?(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2:sorted[Math.floor(sorted.length/2)];
+    const std=Math.sqrt(vals.reduce((s,v)=>s+(v-avg)**2,0)/vals.length);
+    return{g,count:sub.length,avg:+avg.toFixed(2),median:+median.toFixed(2),std:+std.toFixed(2),min:Math.min(...vals),max:Math.max(...vals)};
+  }).filter(Boolean);
+  const maxAvg=Math.max(...stats.map(s=>s.avg));
+  let html=`<div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);margin-bottom:14px;">📊 ${col} Groups — ${num} Comparison</div>`;
+  html+=`<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);"><table class="data-table"><thead><tr><th>${col}</th><th>Count</th><th>Avg ${num}</th><th>Median</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Distribution</th></tr></thead><tbody>`;
+  stats.forEach((s,i)=>{
+    const barW=maxAvg>0?Math.round(s.avg/maxAvg*100):0;
+    html+=`<tr>
+      <td style="font-weight:700;color:${PAL[i%PAL.length]}">${s.g}</td>
+      <td style="font-family:'JetBrains Mono',monospace;">${s.count}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--purple)">${s.avg}</td>
+      <td style="font-family:'JetBrains Mono',monospace;">${s.median}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${s.std}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${s.min}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${s.max}</td>
+      <td><div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;min-width:80px;"><div style="width:${barW}%;height:100%;background:${PAL[i%PAL.length]};border-radius:5px;"></div></div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  // Also draw a comparison chart
+  html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:16px;"><canvas id="compareChart" style="max-height:240px;"></canvas></div>`;
+  document.getElementById('compareOut').innerHTML=html;
+  setTimeout(()=>{
+    setDef();
+    if(charts.compare)try{charts.compare.destroy();}catch(e){}
+    charts.compare=new Chart(document.getElementById('compareChart'),{
+      type:'bar',
+      data:{
+        labels:stats.map(s=>s.g),
+        datasets:[
+          {label:'Avg '+num,data:stats.map(s=>s.avg),backgroundColor:PAL.map(c=>c+'88'),borderColor:PAL,borderWidth:1,borderRadius:8,borderSkipped:false},
+          {label:'Median',data:stats.map(s=>s.median),type:'line',borderColor:PAL[1],backgroundColor:'transparent',borderWidth:2,pointRadius:5,pointBackgroundColor:PAL[1]}
+        ]
+      },
+      options:{plugins:{legend:{labels:{color:'#7c6fa0'}}},scales:{x:{grid:{color:'rgba(45,37,80,.4)'}},y:{grid:{color:'rgba(45,37,80,.4)'}}}}
+    });
+  },100);
+}
+
+/* ─── TABLE ─── */
+let tableData=[];
+function buildTable(data){
+  tableData=data;renderTable(data);
+  const sb=document.getElementById('searchBox');
+  sb.oninput=null;
+  sb.addEventListener('input',e=>{
+    const q=e.target.value.toLowerCase();
+    const filtered=tableData.filter(d=>Object.values(d).some(v=>String(v).toLowerCase().includes(q)));
+    renderTable(filtered);
+  });
+}
+function renderTable(data){
+  document.getElementById('tableCount').innerText=data.length+' rows';
+  const t=document.getElementById('dataTable');
+  if(!data.length){t.innerHTML='<tbody><tr><td style="padding:20px;color:var(--text3)">No matching records</td></tr></tbody>';return;}
+  const cols=Object.keys(data[0]);
+  let html='<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>';
+  data.slice(0,500).forEach(d=>{html+=`<tr>${cols.map(c=>`<td>${d[c]!=null?d[c]:''}</td>`).join('')}</tr>`;});
+  t.innerHTML=html+'</tbody>';
+}
+
+/* ═══════════════════════════════════════════════ */
+/* GROQ AI — Rich Structured Insights              */
+/* ═══════════════════════════════════════════════ */
+async function callGroqAI(data){
+  if(!groqKey)return;
+  switchTab('ai');
+  document.getElementById('aiBox').innerHTML='<div class="ai-loading"><div class="spinner"></div>&nbsp;Generating comprehensive AI insights…</div>';
+
+  const rules=apriori(data,0.15,0.4).slice(0,25).map(r=>`${r.a} → ${r.b} (sup:${(r.support*100).toFixed(0)}%, conf:${(r.confidence*100).toFixed(0)}%, lift:${r.lift}x)`).join('\n');
+  const colStats=detectedColumns.all.map(col=>{
+    const p=datasetProfile.columns[col];
+    if(p.type==='numeric')return`${col}[numeric]: min=${p.min}, max=${p.max}, avg=${p.avg}`;
+    const vals=data.map(d=>d[col]).filter(Boolean);
+    const dist=[...new Set(vals)].slice(0,6).map(v=>`${v}:${vals.filter(x=>x===v).length}`).join(', ');
+    return`${col}[categorical,${p.uniqueCount} unique]: ${dist}`;
+  }).join('\n');
+
+  const prompt=`You are an expert data analyst. Analyze this dataset and return ONLY valid JSON (no markdown, no preamble).
+
+DATASET:
+- Records: ${data.length}
+- Numeric columns: ${detectedColumns.num.join(', ')||'none'}
+- Categorical columns: ${detectedColumns.cat.join(', ')||'none'}
+
+COLUMN STATS:
+${colStats}
+
+TOP ASSOCIATION RULES:
+${rules||'No strong rules found'}
+
+Return exactly this JSON structure:
+{
+  "summary": "2-3 sentence overview of what this dataset represents and its key characteristics",
+  "keyPatterns": [
+    {"title":"Pattern name","description":"Detailed insight","tag":"category"},
+    {"title":"","description":"","tag":""},
+    {"title":"","description":"","tag":""}
+  ],
+  "ruleExplanations": [
+    {"rule":"A → B","plain":"Plain English explanation","implication":"What action or insight this implies"},
+    {"rule":"","plain":"","implication":""},
+    {"rule":"","plain":"","implication":""}
+  ],
+  "segments": [
+    {"name":"Segment name","description":"Who/what this segment is and key traits","size":"~X%"},
+    {"name":"","description":"","size":""},
+    {"name":"","description":"","size":""}
+  ],
+  "recommendations": [
+    {"icon":"🎯","text":"Specific actionable recommendation"},
+    {"icon":"📈","text":""},
+    {"icon":"🔍","text":""},
+    {"icon":"⚡","text":""},
+    {"icon":"💡","text":""}
+  ],
+  "columnInsights": ${JSON.stringify(detectedColumns.all.slice(0,8).map(c=>({column:c,insight:""})))},
+  "stats": [
+    {"label":"Strongest Pattern","value":""},
+    {"label":"Top Segment","value":""},
+    {"label":"Data Quality","value":""},
+    {"label":"Rule Count","value":"${apriori(data,0.15,0.4).length} found"}
+  ]
+}`;
+
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:3000,temperature:0.6})
+    });
+    const json=await res.json();
+    if(!res.ok)throw new Error(json?.error?.message||'API Error '+res.status);
+    const text=json?.choices?.[0]?.message?.content||'';
+    let ins;
+    try{ins=JSON.parse(text.replace(/```json|```/g,'').trim());}
+    catch(e){
+      // Fallback plain text render
+      document.getElementById('aiBox').innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:24px;font-size:13px;line-height:1.8;color:var(--text2);">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--purple)">$1</strong>')}</div>`;
+      return;
+    }
+    renderAI(ins);
+  }catch(err){
+    document.getElementById('aiBox').innerHTML=`<div class="ai-error">⚠️ ${err.message}</div>`;
+  }
+}
+
+function renderAI(ins){
+  let html='';
+  if(ins.summary)html+=`<div class="ai-summary">💡 ${ins.summary}</div>`;
+  if(ins.stats?.length)html+=`<div class="ai-stat-row">${ins.stats.filter(s=>s.value).map(s=>`<div class="ai-stat-chip"><strong>${s.label}:</strong> ${s.value}</div>`).join('')}</div>`;
+
+  if(ins.keyPatterns?.length){
+    html+=`<div style="margin-bottom:24px;"><div class="ai-section-title">🔍 Key Patterns</div><div class="ai-grid">`;
+    ins.keyPatterns.filter(p=>p.title).forEach((p,i)=>{
+      html+=`<div class="ai-card"><div class="ai-card-num">0${i+1}</div><div class="ai-card-title">${p.title}</div><div class="ai-card-text">${p.description}</div>${p.tag?`<span class="ai-tag">${p.tag}</span>`:''}</div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  if(ins.ruleExplanations?.length){
+    html+=`<div style="margin-bottom:24px;"><div class="ai-section-title">🔗 Rule Explanations</div>`;
+    ins.ruleExplanations.filter(r=>r.rule).forEach(r=>{
+      html+=`<div class="ai-rule-explain"><div class="rule-str">${r.rule}</div><div class="rule-plain">${r.plain}</div>${r.implication?`<div class="rule-impl">→ ${r.implication}</div>`:''}</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  if(ins.segments?.length){
+    html+=`<div style="margin-bottom:24px;"><div class="ai-section-title">👥 Data Segments</div><div class="ai-grid">`;
+    ins.segments.filter(s=>s.name).forEach((s,i)=>{
+      html+=`<div class="ai-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><span class="ai-card-title">${s.name}</span><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;background:${PAL[i%PAL.length]}22;color:${PAL[i%PAL.length]};border:1px solid ${PAL[i%PAL.length]}44;">${s.size}</span></div><div class="ai-card-text">${s.description}</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  if(ins.recommendations?.length){
+    html+=`<div style="margin-bottom:24px;"><div class="ai-section-title">🎯 Recommendations</div>`;
+    ins.recommendations.filter(r=>r.text).forEach(r=>{
+      html+=`<div class="ai-rec"><span class="ai-rec-icon">${r.icon||'✅'}</span><span class="ai-rec-text">${r.text}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  if(ins.columnInsights?.length){
+    html+=`<div><div class="ai-section-title">📊 Column Deep Dive</div><div class="ai-grid">`;
+    ins.columnInsights.filter(c=>c.insight).forEach(c=>{
+      html+=`<div class="col-insight"><div class="col-name">${c.column}</div><div class="col-text">${c.insight}</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  document.getElementById('aiBox').innerHTML=html||'<div style="color:var(--text3);padding:20px;">No insights generated.</div>';
+}
+function toggleTheme(){
+  const body = document.body;
+  const btn = document.getElementById("themeBtn");
+
+  body.classList.toggle("light");
+
+  if(body.classList.contains("light")){
+    btn.innerHTML = "☀️ Light";
+    localStorage.setItem("theme","light");
+  }else{
+    btn.innerHTML = "🌙 Dark";
+    localStorage.setItem("theme","dark");
+  }
+}
+
+/* Load saved theme */
+window.onload = function(){
+  const saved = localStorage.getItem("theme");
+
+  if(saved === "light"){
+    document.body.classList.add("light");
+    document.getElementById("themeBtn").innerHTML = "☀️ Light";
+  }
+}
+</script>
+</body>
+</html>
